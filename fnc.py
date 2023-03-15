@@ -56,4 +56,12 @@ class Gpu:
         self.category = category
 
 
-
+class Rom:
+    def __init__(self, name='None', type='None', capacity=0, price=0, mark=0, rank=0):
+        self.name = name
+        self.type = type
+        self.capacity = capacity
+        self.price = price
+        self.mark = mark
+        self.rank = rank
+    
