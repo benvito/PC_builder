@@ -1,12 +1,85 @@
-import fnc
-
+import functions as f
 import telebot
 
+token = '6293487861:AAGDY7-kNgR1tzWpyp2SJDBTOsHQJkOa0_M' #t.me/buildYourPC_bot
+bot = telebot.TeleBot(token)
+
+btnBuild = telebot.types.KeyboardButton("🖥 Собрать ПК")
+btnHelp = telebot.types.KeyboardButton("📄 Помощь")
+btnSettings = telebot.types.KeyboardButton("⚙️ Настройки")
+btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
+btnWorking = telebot.types.KeyboardButton("💻 Работа")
+btnGraphics = telebot.types.KeyboardButton("🎥 Графика")
+
+markupMain = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+markupMain.add(btnBuild, btnSettings, btnHelp)
+
+markupBuildCFG = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+markupBuildCFG.add(btnGaming, btnGraphics, btnWorking)
+
+print('BOT STARTED')
+price = 0
+cfg = ''
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, f'🤙 Привет {message.from_user.first_name}, я включил тебе кнопки навигации ^_^', reply_markup=markupMain)
 
 
-bld = fnc.Build(sum_price=40000)
-bld.set_price()
-print(bld.motherboard_price)
-print(bld.cpu_price)
-print(bld.gpu_price)
+@bot.message_handler(commands=['info', 'help'])
+def help_menu(message):
+    bot.send_message(message.chat.id, 'Тебе никто не поможет')
 
+@bot.message_handler(content_types=['text'])
+def text(message):
+    if message.text == btnBuild.text:
+        msg = bot.send_message(message.chat.id, 'Какой у тебя бюджет?')
+        bot.register_next_step_handler(msg, set_priceStep)
+        #Сюда запихаем функцию сборки, перед этим спрашиваем нужные данные
+    elif message.text == btnHelp.text:
+        bot.send_message(message.chat.id, 'Тебе никто не поможет')
+        #Описание бота наверное
+    elif message.text == btnSettings.text:
+        pass
+        #могу организовать настройки, запарно, но идея уже есть
+    else:
+        bot.send_message(message.chat.id, 'Извини, я тебя не понимаю используй /help для помощи или /start для кнопок')
+
+def set_priceStep(message):
+    try:
+        price = int(message.text)
+        msg = bot.send_message(message.chat.id, 'Ок, определимся для чего тебе нужен ПК', reply_markup=markupBuildCFG)
+        bot.register_next_step_handler(msg, set_cfgStep)
+    except:
+        bot.send_message(message.chat.id, 'Упс, вы ввели не число, повторите')
+        text(btnBuild)
+def set_cfgStep(message):
+    if message.text == btnGaming.text:
+        cfg = 'Gaming'
+    elif message.text == btnGraphics.text:
+        cfg = 'Graphics'
+    elif message.text == btnWorking.text:
+        cfg = 'Working'
+    else:
+        bot.send_message(message.chat.id, 'Извини, я тебя не понимаю, давай по новой')
+        text(btnBuild)
+
+    bld = f.Build(sum_price=price, cfg=cfg)
+    bld.set_price()
+    bot.send_message(message.chat.id, f'''Собрать пока что не могу, но выведу расчет цены:
+    Материнская плата: {bld.motherboard_price} руб
+    Процессор: {bld.cpu_price} руб
+    Видеокарта: {bld.gpu_price} руб
+    Накопитель: {bld.rom_price} руб
+    Оперативная память: {bld.ram_price} руб
+    Блок питания: {bld.psu_price} руб
+    ''', reply_markup=markupMain)
+
+
+bot.polling(non_stop=True)
+
+# bld = f.Build(sum_price=40000, cfg="Gaming")
+# bld.set_price()
+# print(bld.motherboard_price)
+# print(bld.cpu_price)
+# print(bld.gpu_price)

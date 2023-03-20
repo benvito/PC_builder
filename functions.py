@@ -35,6 +35,14 @@ class Build:
             self.RAM_per = 12
             self.ROM_per = 10
             self.Other_per = 7
+        else:
+            self.MB_per = 10
+            self.CPU_per = 10
+            self.GPU_per = 10
+            self.PSU_per = 10
+            self.RAM_per = 10
+            self.ROM_per = 10
+            self.Other_per = 10
 
         self.motherboard = motherboard
         self.cpu = cpu
