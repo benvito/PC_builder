@@ -47,12 +47,13 @@ def text(message):
 
 def set_priceStep(message):
     try:
+        global price
         price = int(message.text)
         msg = bot.send_message(message.chat.id, 'Ок, определимся для чего тебе нужен ПК', reply_markup=markupBuildCFG)
         bot.register_next_step_handler(msg, set_cfgStep)
     except:
-        bot.send_message(message.chat.id, 'Упс, вы ввели не число, повторите')
-        text(btnBuild)
+        bot.send_message(message.chat.id, 'Упс, вы ввели не число')
+
 def set_cfgStep(message):
     if message.text == btnGaming.text:
         cfg = 'Gaming'
@@ -61,18 +62,18 @@ def set_cfgStep(message):
     elif message.text == btnWorking.text:
         cfg = 'Working'
     else:
-        bot.send_message(message.chat.id, 'Извини, я тебя не понимаю, давай по новой')
-        text(btnBuild)
+        bot.send_message(message.chat.id, 'Извини, я тебя не понимаю')
+
 
     bld = f.Build(sum_price=price, cfg=cfg)
     bld.set_price()
     bot.send_message(message.chat.id, f'''Собрать пока что не могу, но выведу расчет цены:
-    Материнская плата: {bld.motherboard_price} руб
-    Процессор: {bld.cpu_price} руб
-    Видеокарта: {bld.gpu_price} руб
-    Накопитель: {bld.rom_price} руб
-    Оперативная память: {bld.ram_price} руб
-    Блок питания: {bld.psu_price} руб
+    Материнская плата: {bld.motherboard_price[0]}-{bld.motherboard_price[1]} руб
+    Процессор: {bld.cpu_price[0]}-{bld.cpu_price[1]} руб
+    Видеокарта: {bld.gpu_price[0]}-{bld.gpu_price[1]} руб
+    Накопитель: {bld.rom_price[0]}-{bld.rom_price[1]} руб
+    Оперативная память: {bld.ram_price[0]}-{bld.ram_price[1]} руб
+    Блок питания: {bld.psu_price[0]}-{bld.psu_price[1]} руб
     ''', reply_markup=markupMain)
 
 
