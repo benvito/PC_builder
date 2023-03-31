@@ -62,16 +62,21 @@ class Build:
 
 
 class Motherboard:
-    def __init__(self, name='None', price=0, socket='None', ram='None', category='None'):
+    def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
         self.name = name
-        self.price = price
+        self.formFactor = formFactor
         self.socket = socket
+        self.chipset = chipset
+        self.ramType = ramType
+        self.ramSlots = ramSlots
+        self.ramFreq = ramFreq
+        self.price = price
         self.category = category
-        self.ram = ram
+
 
 
 class Cpu:
-    def __init__(self, name='None', price=0, mark=0, tdp=0, cores=0, socket='None', category='None'):
+    def __init__(self, name=None, price=0, mark=0, tdp=0, cores=0, socket=None, category=None):
         self.name = name
         self.price = price
         self.mark = mark
@@ -82,7 +87,7 @@ class Cpu:
 
 
 class Gpu:
-    def __init__(self, name='None', price=0, mark3D=0, mark2D=0, tdp=0, category='None'):
+    def __init__(self, name=None, price=0, mark3D=0, mark2D=0, tdp=0, category=None):
         self.name = name
         self.price = price
         self.mark3D = mark3D
@@ -92,7 +97,7 @@ class Gpu:
 
 
 class Rom:
-    def __init__(self, name='None', type='None', capacity=0, price=0, mark=0, rank=0):
+    def __init__(self, name=None, type=None, capacity=0, price=0, mark=0, rank=0):
         self.name = name
         self.type = type
         self.capacity = capacity
