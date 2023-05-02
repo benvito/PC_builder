@@ -1,7 +1,5 @@
 import pandas as pd
 
-
-
 class Build:
     def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None):   
         self.motherboard_price = None
@@ -53,13 +51,35 @@ class Build:
         self.sum_price = sum_price
     def set_price(self):
         self.motherboard_price = (int((self.sum_price / 100) * (self.MB_per - 2)), int((self.sum_price / 100) * self.MB_per))
-        self.cpu_price = (int((self.sum_price / 100) * (self.CPU_per - 5)), int((self.sum_price / 100) * self.CPU_per))
-        self.gpu_price = (int((self.sum_price / 100) * (self.GPU_per - 5)), int((self.sum_price / 100) * self.GPU_per))
-        self.rom_price = (int((self.sum_price / 100) * (self.ROM_per - 5)), int((self.sum_price / 100) * self.ROM_per))
-        self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 5)), int((self.sum_price / 100) * self.RAM_per))
-        self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 5)), int((self.sum_price / 100) * self.PSU_per))
+        self.cpu_price = (int((self.sum_price / 100) * (self.CPU_per - 30)), int((self.sum_price / 100) * self.CPU_per))
+        self.gpu_price = (int((self.sum_price / 100) * (self.GPU_per - 30)), int((self.sum_price / 100) * self.GPU_per))
+        self.rom_price = (int((self.sum_price / 100) * (self.ROM_per - 30)), int((self.sum_price / 100) * self.ROM_per))
+        self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 30)), int((self.sum_price / 100) * self.RAM_per))
+        self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 30)), int((self.sum_price / 100) * self.PSU_per))
     def sorter(self):
-        pass # in progress
+        dfCPU = pd.read_csv("data/CPU.csv")
+        dfGPU = pd.read_csv("data/GPU.csv")
+        dfMB = pd.read_csv("data/MB.csv")
+        dfROM = pd.read_csv("data/ROM.csv")
+
+        tmpCPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
+        tmpGPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
+        tmpMB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1])]
+        tmpROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
+
+        tmpCPU.sort_values('cpuValue')
+        tmpGPU.sort_values('gpuValue')
+        tmpMB.sort_values('ramFreq')
+        tmpROM.sort_values('diskMark')
+
+        print(tmpCPU)
+        print(tmpGPU)
+        print(tmpMB)
+        print(tmpROM)
+        
+        
+        
+
     
 
 
@@ -107,3 +127,8 @@ class Rom:
         self.mark = mark
         self.rank = rank
     
+
+
+tmp = Build(sum_price=60000, cfg='Gaming')
+tmp.set_price()
+tmp.sorter()
