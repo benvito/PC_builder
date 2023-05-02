@@ -49,7 +49,7 @@ class Build:
         self.gpu = gpu
         self.psu = psu
         self.ram = ram
-        self.rom = None
+        self.rom = rom
         self.sum_price = sum_price
     def set_price(self):
         self.motherboard_price = (int((self.sum_price / 100) * (self.MB_per - 2)), int((self.sum_price / 100) * self.MB_per))
@@ -58,6 +58,8 @@ class Build:
         self.rom_price = (int((self.sum_price / 100) * (self.ROM_per - 5)), int((self.sum_price / 100) * self.ROM_per))
         self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 5)), int((self.sum_price / 100) * self.RAM_per))
         self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 5)), int((self.sum_price / 100) * self.PSU_per))
+    def sorter(self):
+        pass # in progress
     
 
 
