@@ -56,14 +56,9 @@ class Build:
         self.rom_price = (int((self.sum_price / 100) * (self.ROM_per - 30)), int((self.sum_price / 100) * self.ROM_per))
         self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 30)), int((self.sum_price / 100) * self.RAM_per))
         self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 30)), int((self.sum_price / 100) * self.PSU_per))
-    def sorter(self):
+    
+    def getCPU(self):
         dfCPU = pd.read_csv("data/CPU.csv")
-        dfGPU = pd.read_csv("data/GPU.csv")
-        dfMB = pd.read_csv("data/MB.csv")
-        dfROM = pd.read_csv("data/ROM.csv")
-
-
-        # --- CPU ---
         to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
         to_price_CPU.sort_values('cpuValue')
         cpu = to_price_CPU.head(1)
@@ -77,8 +72,8 @@ class Build:
                        socket=cpu['socket'].values[0], 
                        category=cpu['category'].values[0])
         
-        
-        # --- MOTHERBOARDS ---
+    def getMB(self):
+        dfMB = pd.read_csv("data/MB.csv")
         to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
 
         print(self.cpu.socket)
@@ -96,9 +91,9 @@ class Build:
                                        maxRam= mb['maxRam'].values[0],
                                        powerPin= mb['powerPin'].values[0],
                                        price= mb['price'].values[0])
-        
 
-        # --- GPU ---
+    def getGPU(self):
+        dfGPU = pd.read_csv("data/GPU.csv")
         to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
         to_price_GPU.sort_values('gpuValue')
         gpu = to_price_GPU.head(1)
@@ -111,16 +106,20 @@ class Build:
                        tdp=gpu['TDP'].values[0],                        
                        category=gpu['category'].values[0])
 
-        tmpMB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1])]
-        tmpROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
+    def getROM(self):
+        dfROM = pd.read_csv("data/ROM.csv")
+        to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
+        to_price_ROM.sort_values('diskMark')
+        rom = to_price_ROM.head(1)
+        rom = rom.drop(columns='Unnamed: 0')
 
-        tmpMB.sort_values('ramFreq')
-        tmpROM.sort_values('diskMark')
+        #self.rom = Rom()
+
+    def build(self):
+        pass
+        # добавь дэбик
         
-
-        # print(tmpGPU)
-        # print(tmpMB)
-        # print(tmpROM)
+    
     def out(self):
         return f"""CPU: {self.cpu.name}
     Socket: {self.cpu.socket}
