@@ -1,29 +1,49 @@
-import functions as f
+import functions as func
 import telebot
+import os
 
 token = '6293487861:AAGDY7-kNgR1tzWpyp2SJDBTOsHQJkOa0_M' #t.me/buildYourPC_bot
 bot = telebot.TeleBot(token)
 
 btnBuild = telebot.types.KeyboardButton("🖥 Собрать ПК")
-btnHelp = telebot.types.KeyboardButton("📄 Помощь")
+btnModes = telebot.types.KeyboardButton("📄 Моды")
+btnModeFirst = telebot.types.KeyboardButton("🥇 Лучший")
+btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь")
+btnModeRandom = telebot.types.KeyboardButton("🎲 Рандом")
 btnSettings = telebot.types.KeyboardButton("⚙️ Настройки")
 btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
 btnWorking = telebot.types.KeyboardButton("💻 Работа")
 btnGraphics = telebot.types.KeyboardButton("🎥 Графика")
 
+btnSum1 = telebot.types.KeyboardButton("50000")
+btnSum2 = telebot.types.KeyboardButton("100000")
+btnSum3 = telebot.types.KeyboardButton("150000")
+markupPrices = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+markupPrices.add(btnSum1, btnSum2, btnSum3)
+
 markupMain = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-markupMain.add(btnBuild, btnSettings, btnHelp)
+markupMain.add(btnBuild, btnSettings, btnModes)
 
 markupBuildCFG = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 markupBuildCFG.add(btnGaming, btnGraphics, btnWorking)
 
+markupModes = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+markupModes.add(btnModeFirst, btnModeQueue, btnModeRandom)
+
 print('BOT STARTED')
-price = 0
-cfg = ''
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    try:
+        if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+            os.makedirs(f'{os.getcwd()}\\userdata\\{message.chat.id}')
+    except:
+        pass
     bot.send_message(message.chat.id, f'Здравствуй, {message.from_user.first_name}! Рады видеть вас в PC Builder – боте, который поможет вам подобрать оптимальную конфигурацию компьютера на любой бюджет.', reply_markup=markupMain)
+    # if f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+    #     with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt', 'a+') as nameWr:
+    #         nameWr.write(f'Username: {message.from_user.username}\nName: {message.from_user.first_name} {message.from_user.last_name}')
+    #         nameWr.close()
 
 
 @bot.message_handler(commands=['info', 'help'])
@@ -33,54 +53,89 @@ def help_menu(message):
 @bot.message_handler(content_types=['text'])
 def text(message):
     if message.text == btnBuild.text:
-        msg = bot.send_message(message.chat.id, 'Чтобы собрать компьютер оптимальной конфигурации для твоих потребностей, мне необходимо знать твой бюджет. Пожалуйста, укажи сумму, которую ты готов потратить на компьютер, в формате "XXXXX рублей" (например, "50000 рублей"). После того, как ты укажешь бюджет, я подберу для тебя лучшую возможную конфигурацию ПК в соответствии с твоими предпочтениями.')
+        msg = bot.send_message(message.chat.id, 'Чтобы собрать компьютер оптимальной конфигурации для твоих потребностей, мне необходимо знать твой бюджет. Пожалуйста, укажи сумму, которую ты готов потратить на компьютер, в формате "XXXXX рублей" (например, "50000 рублей"). После того, как ты укажешь бюджет, я подберу для тебя лучшую возможную конфигурацию ПК в соответствии с твоими предпочтениями.', reply_markup=markupPrices)
         bot.register_next_step_handler(msg, set_priceStep)
         #Сюда запихаем функцию сборки, перед этим спрашиваем нужные данные
-    elif message.text == btnHelp.text:
-        bot.send_message(message.chat.id, 'Тебе никто не поможет')
-        #Описание бота, наверное
+    elif message.text == btnModes.text:
+        msg = bot.send_message(message.chat.id, 'Выберите режим', reply_markup=markupModes)
+        bot.register_next_step_handler(msg, setMode)
+
     elif message.text == btnSettings.text:
         pass
         #могу организовать настройки, запарно, но идея уже есть
     else:
         bot.send_message(message.chat.id, 'Извини, я тебя не понимаю, используй /help для помощи или /start для кнопок')
 
+def setMode(message):
+    if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+        os.makedirs(f'{os.getcwd()}\\userdata\\{message.chat.id}')
+    with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'w+') as file:
+        if message.text == btnModeFirst.text:
+            file.write('first')
+            bot.send_message(message.chat.id, btnModeFirst.text, reply_markup=markupMain)
+            file.close()
+        elif message.text == btnModeQueue.text:
+            file.write('queue')
+            bot.send_message(message.chat.id, btnModeQueue.text, reply_markup=markupMain)
+            file.close()
+        else:
+            file.write('random')
+            bot.send_message(message.chat.id, btnModeRandom.text, reply_markup=markupMain)
+            file.close()
+
 def set_priceStep(message):
     try:
-        global price
-        price = int(message.text)
+        if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+            os.makedirs(f'{os.getcwd()}\\userdata\\{message.chat.id}')
+        with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'a+') as f:
+            f.write(message.text.strip())
+            f.close()
         msg = bot.send_message(message.chat.id, 'Ок, определимся для чего тебе нужен ПК', reply_markup=markupBuildCFG)
         bot.register_next_step_handler(msg, set_cfgStep)
-    except:
+    except Exception as e:
         bot.send_message(message.chat.id, 'Упс, вы ввели не число')
 
 def set_cfgStep(message):
-    if message.text == btnGaming.text:
-        cfg = 'Gaming'
-    elif message.text == btnGraphics.text:
-        cfg = 'Graphics'
-    elif message.text == btnWorking.text:
-        cfg = 'Working'
-    else:
-        bot.send_message(message.chat.id, 'Извини, я тебя не понимаю')
+    with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'a+') as f:
+        if message.text == btnGaming.text:
+            f.write("Gaming")
+        elif message.text == btnGraphics.text:
+            f.write("Graphics")
+        elif message.text == btnWorking.text:
+            f.write("Working")
+        else:
+            bot.send_message(message.chat.id, 'Извини, я тебя не понимаю')
+            f.close()
+            text(message)
+        f.close()
 
 
-    bld = f.Build(sum_price=price, cfg=cfg)
+    bld = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()), cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read())
     bld.set_price()
-    bot.send_message(message.chat.id, f'''Собрать пока что не могу, но выведу расчет цены:
-    Материнская плата: {bld.motherboard_price[0]}-{bld.motherboard_price[1]} руб
-    Процессор: {bld.cpu_price[0]}-{bld.cpu_price[1]} руб
-    Видеокарта: {bld.gpu_price[0]}-{bld.gpu_price[1]} руб
-    Накопитель: {bld.rom_price[0]}-{bld.rom_price[1]} руб
-    Оперативная память: {bld.ram_price[0]}-{bld.ram_price[1]} руб
-    Блок питания: {bld.psu_price[0]}-{bld.psu_price[1]} руб
+    bot.send_message(message.chat.id, f'''Расчет цены:
+    Материнская плата до {bld.motherboard_price[1]} руб
+    Процессор до {bld.cpu_price[1]} руб
+    Видеокарта до {bld.gpu_price[1]} руб
+    Накопитель до {bld.rom_price[1]} руб
+    Оперативная память до {bld.ram_price[1]} руб
+    Блок питания до {bld.psu_price[1]} руб
     ''', reply_markup=markupMain)
-
+    try:
+        builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
+                             cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
+                             mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read())
+        builder.set_price()
+        builder.build()
+        
+        bot.send_message(message.chat.id, builder.out())
+    except:
+        bot.send_message(message.chat.id, 'Кажется для данной цены нет сборки, попробуйте увеличить бюджет')
+        text(message)
+    try:
+        os.remove(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt')
+        os.remove(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt')
+    except Exception as e:
+        print(e)
+    
 
 bot.polling(non_stop=True)
-
-# bld = f.Build(sum_price=40000, cfg="Gaming")
-# bld.set_price()
-# print(bld.motherboard_price)
-# print(bld.cpu_price)
-# print(bld.gpu_price)

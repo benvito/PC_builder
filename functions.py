@@ -1,13 +1,17 @@
 import pandas as pd
+import random
 
 class Build:
-    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None):   
+    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first'):
         self.motherboard_price = None
         self.cpu_price = None
         self.gpu_price = None
         self.rom_price = None
         self.ram_price = None
         self.psu_price = None
+        self.cfg = cfg
+        self.sum_price=sum_price
+        self.mode = mode
 
         if cfg == "Gaming":
             self.MB_per = 13
@@ -57,12 +61,18 @@ class Build:
         self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 30)), int((self.sum_price / 100) * self.RAM_per))
         self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 30)), int((self.sum_price / 100) * self.PSU_per))
     
-    def getCPU(self):
+    def getCPUnMB(self):
         dfCPU = pd.read_csv("data/CPU.csv")
         to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
         to_price_CPU.sort_values('cpuValue')
-        cpu = to_price_CPU.head(1)
-        
+
+        if self.mode == 'random':
+            #cpu = to_price_CPU.iloc[[random.randint(1, 7)]]
+            cpu = to_price_CPU.iloc[[random.randint(1, 7)]]
+        else:
+            cpu = to_price_CPU.head(1)
+
+
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
@@ -76,12 +86,14 @@ class Build:
                        socket=cpu['socket'].values[0], 
                        category=cpu['category'].values[0])
         
-    def getMB(self):
         dfMB = pd.read_csv("data/MB.csv")
         to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
-        
         to_price_MB.sort_values('ramFreq')
-        mb = to_price_MB.head(1)
+
+        if self.mode == 'random':
+            mb = to_price_MB.iloc[[random.randint(1, 7)]]
+        else:
+            mb = to_price_MB.head(1)
 
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
@@ -103,7 +115,11 @@ class Build:
         dfGPU = pd.read_csv("data/GPU.csv")
         to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
         to_price_GPU.sort_values('gpuValue')
-        gpu = to_price_GPU.head(1)
+
+        if self.mode == 'random':
+            gpu = to_price_GPU.iloc[[random.randint(1, 7)]]
+        else:
+            gpu = to_price_GPU.head(1)
 
 
         try:
@@ -120,9 +136,18 @@ class Build:
 
     def getROM(self):
         dfROM = pd.read_csv("data/ROM.csv")
-        to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
+        if self.cfg == "Gaming":
+            to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1]) & (dfROM['type'] == 'SSD')]
+            if len(to_price_ROM['type'].values) == 0:
+                to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
+        else:
+            to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
         to_price_ROM.sort_values('driveValue')
-        rom = to_price_ROM.head(1)
+
+        if self.mode == 'random':
+            rom = to_price_ROM.iloc[[random.randint(1, 7)]]
+        else:
+            rom = to_price_ROM.head(1)
 
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
@@ -137,41 +162,43 @@ class Build:
                        price=rom['price'].values[0])
 
     def build(self):
-        self.getCPU()
-        self.getMB()
+        self.getCPUnMB()
         self.getGPU()
         self.getROM()
         
     
     def out(self):
-        return f"""CPU: {self.cpu.name}
-    Socket: {self.cpu.socket}
-    Cores: {self.cpu.cores}
-    TDP: {self.cpu.tdp}
-    Benchmark: {self.cpu.mark}
-    Price: {self.cpu.price}
-GPU: {self.gpu.name}
-    TDP: {self.gpu.tdp}
-    Benchmark3D: {self.gpu.mark3D}
-    Benchmark2D: {self.gpu.mark2D}
-    Price: {self.gpu.price}
-Motherboard: {self.motherboard.name}
-    Form-factor: {self.motherboard.formFactor}
-    Socket: {self.motherboard.socket}
-    Chipset: {self.motherboard.chipset}
-    RAM Type: {self.motherboard.ramType}
-    RAM slots: {self.motherboard.ramSlots}
-    RAM Frequency: {self.motherboard.ramFreq}
-    RAM max: {self.motherboard.maxRam}
-    Power PINS: {self.motherboard.powerPin}
-    Price: {self.motherboard.price}
-ROM: {self.rom.name}
-    Type: {self.rom.type}
-    Capacity: {self.rom.capacity}
-    Benchmark: {self.rom.mark}
-    Price: {self.rom.price}
+        return f"""🧠CPU: {self.cpu.name}
+            Socket: {self.cpu.socket}
+            Cores: {self.cpu.cores}
+            TDP: {self.cpu.tdp}
+            Benchmark: {self.cpu.mark}
+            Price: {self.cpu.price}
+🖥 GPU: {self.gpu.name}
+            TDP: {self.gpu.tdp}
+            Benchmark3D: {self.gpu.mark3D}
+            Benchmark2D: {self.gpu.mark2D}
+            Price: {self.gpu.price}
+🎛Motherboard: {self.motherboard.name}
+            Form-factor: {self.motherboard.formFactor}
+            Socket: {self.motherboard.socket}
+            Chipset: {self.motherboard.chipset}
+            RAM Type: {self.motherboard.ramType}
+            RAM slots: {self.motherboard.ramSlots}
+            RAM Frequency: {self.motherboard.ramFreq}
+            RAM max: {self.motherboard.maxRam}
+            Power PINS: {self.motherboard.powerPin}
+            Price: {self.motherboard.price}
+📀ROM: {self.rom.name}
+            Type: {self.rom.type}
+            Capacity: {self.rom.capacity}
+            Benchmark: {self.rom.mark}
+            Price: {self.rom.price}
+🔧Settings:
+            CFG: {self.cfg}
+            Mode: {self.mode}
 """
-    
+    #сделать итоговую цену и очередной режим
 
 class Motherboard:
     def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
@@ -219,10 +246,3 @@ class Rom:
         self.mark = mark
         self.rank = rank
     
-
-
-tmp = Build(sum_price=60000, cfg='Gaming')
-tmp.set_price()
-tmp.build()
-
-print(tmp.out())
