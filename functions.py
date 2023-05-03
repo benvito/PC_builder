@@ -62,7 +62,11 @@ class Build:
         to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
         to_price_CPU.sort_values('cpuValue')
         cpu = to_price_CPU.head(1)
-        cpu = cpu.drop(columns='Unnamed: 0')
+        
+        try:
+            cpu = cpu.drop(columns='Unnamed: 0')
+        except:
+            pass
         
         self.cpu = Cpu(name=cpu['cpuName'].values[0], 
                        price=cpu['price'].values[0], 
@@ -75,12 +79,15 @@ class Build:
     def getMB(self):
         dfMB = pd.read_csv("data/MB.csv")
         to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
-
-        print(self.cpu.socket)
-        print(to_price_MB.head(50000))
         
         to_price_MB.sort_values('ramFreq')
         mb = to_price_MB.head(1)
+
+        try:
+            cpu = cpu.drop(columns='Unnamed: 0')
+        except:
+            pass
+        
         self.motherboard = Motherboard(name=mb['name'].values[0],
                                        formFactor= mb['formFactor'].values[0],
                                        socket= mb['socket'].values[0],
@@ -97,7 +104,12 @@ class Build:
         to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
         to_price_GPU.sort_values('gpuValue')
         gpu = to_price_GPU.head(1)
-        gpu = gpu.drop(columns='Unnamed: 0')
+
+
+        try:
+            cpu = cpu.drop(columns='Unnamed: 0')
+        except:
+            pass
         
         self.gpu = Gpu(name=gpu['gpuName'].values[0], 
                        price=gpu['price'].values[0], 
@@ -109,15 +121,26 @@ class Build:
     def getROM(self):
         dfROM = pd.read_csv("data/ROM.csv")
         to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
-        to_price_ROM.sort_values('diskMark')
+        to_price_ROM.sort_values('driveValue')
         rom = to_price_ROM.head(1)
-        rom = rom.drop(columns='Unnamed: 0')
 
-        #self.rom = Rom()
+        try:
+            cpu = cpu.drop(columns='Unnamed: 0')
+        except:
+            pass
+
+        self.rom = Rom(name=rom['driveName'].values[0],
+                       type=rom['type'].values[0],
+                       capacity=rom['diskCapacity'].values[0],
+                       mark=rom['diskMark'].values[0],
+                       rank=rom['rank'].values[0],
+                       price=rom['price'].values[0])
 
     def build(self):
-        pass
-        # добавь дэбик
+        self.getCPU()
+        self.getMB()
+        self.getGPU()
+        self.getROM()
         
     
     def out(self):
@@ -137,12 +160,17 @@ Motherboard: {self.motherboard.name}
     Socket: {self.motherboard.socket}
     Chipset: {self.motherboard.chipset}
     RAM Type: {self.motherboard.ramType}
-    Slots for RAM: {self.motherboard.ramSlots}
-    RAM Freq: {self.motherboard.ramFreq}
-    Maximum RAM: {self.motherboard.maxRam}
+    RAM slots: {self.motherboard.ramSlots}
+    RAM Frequency: {self.motherboard.ramFreq}
+    RAM max: {self.motherboard.maxRam}
     Power PINS: {self.motherboard.powerPin}
     Price: {self.motherboard.price}
-    """
+ROM: {self.rom.name}
+    Type: {self.rom.type}
+    Capacity: {self.rom.capacity}
+    Benchmark: {self.rom.mark}
+    Price: {self.rom.price}
+"""
     
 
 class Motherboard:
@@ -195,6 +223,6 @@ class Rom:
 
 tmp = Build(sum_price=60000, cfg='Gaming')
 tmp.set_price()
-tmp.sorter()
+tmp.build()
 
 print(tmp.out())
