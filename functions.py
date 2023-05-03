@@ -62,26 +62,89 @@ class Build:
         dfMB = pd.read_csv("data/MB.csv")
         dfROM = pd.read_csv("data/ROM.csv")
 
-        tmpCPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
-        tmpGPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
+
+        # --- CPU ---
+        to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
+        to_price_CPU.sort_values('cpuValue')
+        cpu = to_price_CPU.head(1)
+        cpu = cpu.drop(columns='Unnamed: 0')
+        
+        self.cpu = Cpu(name=cpu['cpuName'].values[0], 
+                       price=cpu['price'].values[0], 
+                       mark=cpu['cpuMark'].values[0], 
+                       tdp=cpu['TDP'].values[0], 
+                       cores=cpu['cores'].values[0], 
+                       socket=cpu['socket'].values[0], 
+                       category=cpu['category'].values[0])
+        
+        
+        # --- MOTHERBOARDS ---
+        to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
+
+        print(self.cpu.socket)
+        print(to_price_MB.head(50000))
+        
+        to_price_MB.sort_values('ramFreq')
+        mb = to_price_MB.head(1)
+        self.motherboard = Motherboard(name=mb['name'].values[0],
+                                       formFactor= mb['formFactor'].values[0],
+                                       socket= mb['socket'].values[0],
+                                       chipset= mb['chipset'].values[0],
+                                       ramType= mb['ramType'].values[0],
+                                       ramSlots= mb['ramSlots'].values[0],
+                                       ramFreq= mb['ramFreq'].values[0],
+                                       maxRam= mb['maxRam'].values[0],
+                                       powerPin= mb['powerPin'].values[0],
+                                       price= mb['price'].values[0])
+        
+
+        # --- GPU ---
+        to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
+        to_price_GPU.sort_values('gpuValue')
+        gpu = to_price_GPU.head(1)
+        gpu = gpu.drop(columns='Unnamed: 0')
+        
+        self.gpu = Gpu(name=gpu['gpuName'].values[0], 
+                       price=gpu['price'].values[0], 
+                       mark3D=gpu['G3Dmark'].values[0], 
+                       mark2D=gpu['G2Dmark'].values[0], 
+                       tdp=gpu['TDP'].values[0],                        
+                       category=gpu['category'].values[0])
+
         tmpMB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1])]
         tmpROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
 
-        tmpCPU.sort_values('cpuValue')
-        tmpGPU.sort_values('gpuValue')
         tmpMB.sort_values('ramFreq')
         tmpROM.sort_values('diskMark')
-
-        print(tmpCPU)
-        print(tmpGPU)
-        print(tmpMB)
-        print(tmpROM)
-        
-        
         
 
+        # print(tmpGPU)
+        # print(tmpMB)
+        # print(tmpROM)
+    def out(self):
+        return f"""CPU: {self.cpu.name}
+    Socket: {self.cpu.socket}
+    Cores: {self.cpu.cores}
+    TDP: {self.cpu.tdp}
+    Benchmark: {self.cpu.mark}
+    Price: {self.cpu.price}
+GPU: {self.gpu.name}
+    TDP: {self.gpu.tdp}
+    Benchmark3D: {self.gpu.mark3D}
+    Benchmark2D: {self.gpu.mark2D}
+    Price: {self.gpu.price}
+Motherboard: {self.motherboard.name}
+    Form-factor: {self.motherboard.formFactor}
+    Socket: {self.motherboard.socket}
+    Chipset: {self.motherboard.chipset}
+    RAM Type: {self.motherboard.ramType}
+    Slots for RAM: {self.motherboard.ramSlots}
+    RAM Freq: {self.motherboard.ramFreq}
+    Maximum RAM: {self.motherboard.maxRam}
+    Power PINS: {self.motherboard.powerPin}
+    Price: {self.motherboard.price}
+    """
     
-
 
 class Motherboard:
     def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
@@ -94,6 +157,8 @@ class Motherboard:
         self.ramFreq = ramFreq
         self.price = price
         self.category = category
+        self.maxRam = maxRam
+        self.powerPin = powerPin
 
 
 
@@ -132,3 +197,5 @@ class Rom:
 tmp = Build(sum_price=60000, cfg='Gaming')
 tmp.set_price()
 tmp.sorter()
+
+print(tmp.out())
