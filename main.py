@@ -40,10 +40,10 @@ def start(message):
     except:
         pass
     bot.send_message(message.chat.id, f'Здравствуй, {message.from_user.first_name}! Рады видеть вас в PC Builder – боте, который поможет вам подобрать оптимальную конфигурацию компьютера на любой бюджет.', reply_markup=markupMain)
-    # if f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
-    #     with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt', 'a+') as nameWr:
-    #         nameWr.write(f'Username: {message.from_user.username}\nName: {message.from_user.first_name} {message.from_user.last_name}')
-    #         nameWr.close()
+    if 'name.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt', 'a+').write(f'Username: {message.from_user.username}\nName: {message.from_user.first_name} {message.from_user.last_name}')
+    if 'mode.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'a+').write(f'first')
 
 
 @bot.message_handler(commands=['info', 'help'])
@@ -104,9 +104,8 @@ def set_cfgStep(message):
         elif message.text == btnWorking.text:
             f.write("Working")
         else:
-            bot.send_message(message.chat.id, 'Извини, я тебя не понимаю')
+            bot.send_message(message.chat.id, 'Извини, я тебя не понимаю', reply_markup=markupMain)
             f.close()
-            text(message)
         f.close()
 
 
@@ -128,9 +127,8 @@ def set_cfgStep(message):
         builder.build()
         
         bot.send_message(message.chat.id, builder.out())
-    except:
-        bot.send_message(message.chat.id, 'Кажется для данной цены нет сборки, попробуйте увеличить бюджет')
-        text(message)
+    except Exception as e:
+        bot.send_message(message.chat.id, f'Кажется для данной цены нет сборки, попробуйте увеличить бюджет({e})', reply_markup=markupMain)
     try:
         os.remove(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt')
         os.remove(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt')

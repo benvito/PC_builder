@@ -67,8 +67,10 @@ class Build:
         to_price_CPU.sort_values('cpuValue')
 
         if self.mode == 'random':
-            #cpu = to_price_CPU.iloc[[random.randint(1, 7)]]
-            cpu = to_price_CPU.iloc[[random.randint(1, 7)]]
+            randomTMP = random.randint(1, 7)
+            cpu = to_price_CPU.iloc[[randomTMP]]
+            while len(cpu['cpuName'].values[0]) < 4:
+                randomTMP -= 1
         else:
             cpu = to_price_CPU.head(1)
 
@@ -90,10 +92,7 @@ class Build:
         to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
         to_price_MB.sort_values('ramFreq')
 
-        if self.mode == 'random':
-            mb = to_price_MB.iloc[[random.randint(1, 7)]]
-        else:
-            mb = to_price_MB.head(1)
+        mb = to_price_MB.head(1)
 
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
@@ -117,13 +116,15 @@ class Build:
         to_price_GPU.sort_values('gpuValue')
 
         if self.mode == 'random':
-            gpu = to_price_GPU.iloc[[random.randint(1, 7)]]
+            randomTMP = random.randint(1, 7)
+            gpu = to_price_GPU.iloc[[randomTMP]]
+            while len(gpu['gpuName'].values[0]) < 4:
+                randomTMP -= 1
         else:
             gpu = to_price_GPU.head(1)
 
-
         try:
-            cpu = cpu.drop(columns='Unnamed: 0')
+            gpu = gpu.drop(columns='Unnamed: 0')
         except:
             pass
         
@@ -144,10 +145,7 @@ class Build:
             to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
         to_price_ROM.sort_values('driveValue')
 
-        if self.mode == 'random':
-            rom = to_price_ROM.iloc[[random.randint(1, 7)]]
-        else:
-            rom = to_price_ROM.head(1)
+        rom = to_price_ROM.head(1)
 
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
