@@ -8,7 +8,7 @@ bot = telebot.TeleBot(token)
 btnBuild = telebot.types.KeyboardButton("🖥 Собрать ПК")
 btnModes = telebot.types.KeyboardButton("📄 Моды")
 btnModeFirst = telebot.types.KeyboardButton("🥇 Лучший")
-btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь")
+btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь(не работает)")
 btnModeRandom = telebot.types.KeyboardButton("🎲 Рандом")
 btnSettings = telebot.types.KeyboardButton("⚙️ Настройки")
 btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
@@ -32,7 +32,7 @@ markupModes.add(btnModeFirst, btnModeQueue, btnModeRandom)
 
 print('BOT STARTED')
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'info', 'help'])
 def start(message):
     try:
         if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
@@ -45,24 +45,18 @@ def start(message):
     if 'mode.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
         open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'a+').write(f'first')
 
-
-@bot.message_handler(commands=['info', 'help'])
-def help_menu(message):
-    bot.send_message(message.chat.id, 'Тебе никто не поможет')
-
 @bot.message_handler(content_types=['text'])
 def text(message):
     if message.text == btnBuild.text:
-        msg = bot.send_message(message.chat.id, 'Чтобы собрать компьютер оптимальной конфигурации для твоих потребностей, мне необходимо знать твой бюджет. Пожалуйста, укажи сумму, которую ты готов потратить на компьютер, в формате "XXXXX рублей" (например, "50000 рублей"). После того, как ты укажешь бюджет, я подберу для тебя лучшую возможную конфигурацию ПК в соответствии с твоими предпочтениями.', reply_markup=markupPrices)
+        msg = bot.send_message(message.chat.id, 'Укажи нужную цену без пробелов и точек или выбирай из кнопок внизу', reply_markup=markupPrices)
         bot.register_next_step_handler(msg, set_priceStep)
-        #Сюда запихаем функцию сборки, перед этим спрашиваем нужные данные
     elif message.text == btnModes.text:
         msg = bot.send_message(message.chat.id, 'Выберите режим', reply_markup=markupModes)
         bot.register_next_step_handler(msg, setMode)
 
     elif message.text == btnSettings.text:
         pass
-        #могу организовать настройки, запарно, но идея уже есть
+        #в процессе реализации
     else:
         bot.send_message(message.chat.id, 'Извини, я тебя не понимаю, используй /help для помощи или /start для кнопок')
 
@@ -72,15 +66,15 @@ def setMode(message):
     with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'w+') as file:
         if message.text == btnModeFirst.text:
             file.write('first')
-            bot.send_message(message.chat.id, f'Mode: {btnModeFirst.text}', reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Режим: {btnModeFirst.text}', reply_markup=markupMain)
             file.close()
         elif message.text == btnModeQueue.text:
             file.write('queue')
-            bot.send_message(message.chat.id, f'Mode: {btnModeQueue.text}', reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Режим: {btnModeQueue.text}', reply_markup=markupMain)
             file.close()
         else:
             file.write('random')
-            bot.send_message(message.chat.id, f'Mode: {btnModeRandom.text}', reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Режим: {btnModeRandom.text}', reply_markup=markupMain)
             file.close()
 
 def set_priceStep(message):
@@ -111,18 +105,19 @@ def set_cfgStep(message):
 
     bld = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()), cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read())
     bld.set_price()
-    bot.send_message(message.chat.id, f'''Расчет цены:
-    Материнская плата до {bld.motherboard_price[1]} руб
-    Процессор до {bld.cpu_price[1]} руб
-    Видеокарта до {bld.gpu_price[1]} руб
-    Накопитель до {bld.rom_price[1]} руб
-    Оперативная память до {bld.ram_price[1]} руб
-    Блок питания до {bld.psu_price[1]} руб
+    bot.send_message(message.chat.id, f'''💵Расчет цены:
+            Материнская плата до {bld.motherboard_price[1]} руб
+            Процессор до {bld.cpu_price[1]} руб
+            Видеокарта до {bld.gpu_price[1]} руб
+            Накопитель до {bld.rom_price[1]} руб
+            Оперативная память до {bld.ram_price[1]} руб
+            Блок питания до {bld.psu_price[1]} руб
     ''', reply_markup=markupMain)
     try:
         builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
                                            cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
-                                           mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read())
+                                           mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read(),
+                                           ID=message.chat.id)
         builder.set_price()
         builder.build()
         

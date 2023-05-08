@@ -1,8 +1,8 @@
 import pandas as pd
-import random
+import random, os
 
 class Build:
-    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first'):
+    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first', ID=None):
         self.motherboard_price = None
         self.cpu_price = None
         self.gpu_price = None
@@ -12,6 +12,7 @@ class Build:
         self.cfg = cfg
         self.sum_price=sum_price
         self.mode = mode
+        self.ID = ID
 
         if cfg == "Gaming":
             self.MB_per = 13
@@ -159,10 +160,18 @@ class Build:
                        rank=rom['rank'].values[0],
                        price=rom['price'].values[0])
 
+    def getTDP(self):
+        open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp))
+
     def getPSU(self):
         dfPSU = pd.read_csv("data/PSU.csv")
-        to_price_PSU = dfPSU[(dfPSU['price'] > self.rom_price[0]) & (dfPSU['price'] < self.rom_price[1])]
-        
+
+        to_price_PSU = dfPSU[(dfPSU['price'] > self.rom_price[0]) & (dfPSU['price'] < self.rom_price[1]) & (dfPSU['power'] > int(open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt').read()[0:-2]))]
+        try:
+            os.remove(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt')
+        except:
+            print('rm err')
+
         to_price_PSU.sort_values('value')
 
         psu = to_price_PSU.head(1)
@@ -180,48 +189,50 @@ class Build:
         self.getCPUnMB()
         self.getGPU()
         self.getROM()
+        self.getTDP()
         self.getPSU()
         
     
     def out(self):
-        return f"""🧠CPU: {self.cpu.name}
-            Socket: {self.cpu.socket}
-            Cores: {self.cpu.cores}
-            TDP: {self.cpu.tdp}
+        return f"""🧠Процессор: {self.cpu.name}
+            Сокет: {self.cpu.socket}
+            Ядер: {self.cpu.cores}
+            Потребление: {self.cpu.tdp}W
             Benchmark: {self.cpu.mark}
-            Price: {self.cpu.price}
-🖥 GPU: {self.gpu.name}
-            TDP: {self.gpu.tdp}
+            Цена: {self.cpu.price}
+🖥Видеокарта: {self.gpu.name}
+            Потребление: {self.gpu.tdp}W
             Benchmark3D: {self.gpu.mark3D}
             Benchmark2D: {self.gpu.mark2D}
-            Price: {self.gpu.price}
-🎛Motherboard: {self.motherboard.name}
-            Form-factor: {self.motherboard.formFactor}
-            Socket: {self.motherboard.socket}
-            Chipset: {self.motherboard.chipset}
-            RAM Type: {self.motherboard.ramType}
-            RAM slots: {self.motherboard.ramSlots}
-            RAM Frequency: {self.motherboard.ramFreq}
-            RAM max: {self.motherboard.maxRam}
+            Цена: {self.gpu.price}
+🎛Материнская плата: {self.motherboard.name}
+            Форм фактор: {self.motherboard.formFactor}
+            Сокет: {self.motherboard.socket}
+            Чипсет: {self.motherboard.chipset}
+            Тип ОЗУ: {self.motherboard.ramType}
+            Кол-во слотов ОЗУ: {self.motherboard.ramSlots}
+            Максимальная частота ОЗУ: {self.motherboard.ramFreq}
+            Максимальное кол-во ОЗУ: {self.motherboard.maxRam}
             Power PINS: {self.motherboard.powerPin}
-            Price: {self.motherboard.price}
-📀ROM: {self.rom.name}
-            Type: {self.rom.type}
-            Capacity: {self.rom.capacity}
+            Цена: {self.motherboard.price}
+📀Накопитель: {self.rom.name}
+            Тип: {self.rom.type}
+            Ёмкость: {self.rom.capacity}
             Benchmark: {self.rom.mark}
-            Price: {self.rom.price}
-🔌PSU: {self.psu.name}
-            Form factor: {self.psu.formFactor}
-            Power: {self.psu.power}W
-            Fan: {self.psu.fan}
+            Цена: {self.rom.price}
+🔌Блок питания: {self.psu.name}
+            Форм фактор: {self.psu.formFactor}
+            Мощность: {self.psu.power}W
+            Кулер: {self.psu.fan}
             PIN: {self.psu.pin}
             GPU PIN: {self.psu.gpuPin}
-            Price: {self.psu.price}
-🔧Settings:
-            CFG: {self.cfg}
-            Mode: {self.mode}
+            Цена: {self.psu.price}
+🔧Твои настройки:
+            Конфиг: {self.cfg}
+            Режим: {self.mode}
+💵Цена: {self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price} руб
 """
-    #сделать итоговую цену и очередной режим(ну и БП по TDP) 
+    #сделать очередной режим
 
 class Motherboard:
     def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
