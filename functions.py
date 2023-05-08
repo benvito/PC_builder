@@ -159,10 +159,28 @@ class Build:
                        rank=rom['rank'].values[0],
                        price=rom['price'].values[0])
 
+    def getPSU(self):
+        dfPSU = pd.read_csv("data/PSU.csv")
+        to_price_PSU = dfPSU[(dfPSU['price'] > self.rom_price[0]) & (dfPSU['price'] < self.rom_price[1])]
+        
+        to_price_PSU.sort_values('value')
+
+        psu = to_price_PSU.head(1)
+
+        self.psu = Psu(name=psu['name'].values[0],
+                       formFactor=psu['formFactor'].values[0],
+                       power=psu['power'].values[0],
+                       fan=psu['fan'].values[0],
+                       pin=psu['pin'].values[0],
+                       gpuPin=psu['GPUpin'].values[0],
+                       price=psu['price'].values[0]
+                       )
+
     def build(self):
         self.getCPUnMB()
         self.getGPU()
         self.getROM()
+        self.getPSU()
         
     
     def out(self):
@@ -192,11 +210,18 @@ class Build:
             Capacity: {self.rom.capacity}
             Benchmark: {self.rom.mark}
             Price: {self.rom.price}
+🔌PSU: {self.psu.name}
+            Form factor: {self.psu.formFactor}
+            Power: {self.psu.power}W
+            Fan: {self.psu.fan}
+            PIN: {self.psu.pin}
+            GPU PIN: {self.psu.gpuPin}
+            Price: {self.psu.price}
 🔧Settings:
             CFG: {self.cfg}
             Mode: {self.mode}
 """
-    #сделать итоговую цену и очередной режим
+    #сделать итоговую цену и очередной режим(ну и БП по TDP) 
 
 class Motherboard:
     def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
@@ -211,7 +236,6 @@ class Motherboard:
         self.category = category
         self.maxRam = maxRam
         self.powerPin = powerPin
-
 
 
 class Cpu:
@@ -244,3 +268,13 @@ class Rom:
         self.mark = mark
         self.rank = rank
     
+
+class Psu:
+    def __init__(self, name=None, formFactor=None, power=None, fan=None, pin=None, gpuPin=None, price=None):
+        self.name = name
+        self.formFactor = formFactor
+        self.power = power
+        self.fan = fan
+        self.pin = pin
+        self.gpuPin = gpuPin
+        self.price = price

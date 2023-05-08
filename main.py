@@ -72,15 +72,15 @@ def setMode(message):
     with open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'w+') as file:
         if message.text == btnModeFirst.text:
             file.write('first')
-            bot.send_message(message.chat.id, btnModeFirst.text, reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Mode: {btnModeFirst.text}', reply_markup=markupMain)
             file.close()
         elif message.text == btnModeQueue.text:
             file.write('queue')
-            bot.send_message(message.chat.id, btnModeQueue.text, reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Mode: {btnModeQueue.text}', reply_markup=markupMain)
             file.close()
         else:
             file.write('random')
-            bot.send_message(message.chat.id, btnModeRandom.text, reply_markup=markupMain)
+            bot.send_message(message.chat.id, f'Mode: {btnModeRandom.text}', reply_markup=markupMain)
             file.close()
 
 def set_priceStep(message):
@@ -121,8 +121,8 @@ def set_cfgStep(message):
     ''', reply_markup=markupMain)
     try:
         builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
-                             cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
-                             mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read())
+                                           cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
+                                           mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read())
         builder.set_price()
         builder.build()
         
