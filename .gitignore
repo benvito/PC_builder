@@ -1,4 +1,5 @@
 __pycache__/
 geckodriver.log
 env/
+venv/
 userdata/
