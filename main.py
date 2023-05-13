@@ -8,7 +8,7 @@ bot = telebot.TeleBot(token)
 btnBuild = telebot.types.KeyboardButton("🖥 Собрать ПК")
 btnModes = telebot.types.KeyboardButton("📄 Моды")
 btnModeFirst = telebot.types.KeyboardButton("🥇 Лучший")
-btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь(не работает)")
+# btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь(не работает)")
 btnModeRandom = telebot.types.KeyboardButton("🎲 Рандом")
 btnSettings = telebot.types.KeyboardButton("⚙️ Настройки")
 btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
@@ -28,7 +28,7 @@ markupBuildCFG = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_wid
 markupBuildCFG.add(btnGaming, btnGraphics, btnWorking)
 
 markupModes = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-markupModes.add(btnModeFirst, btnModeQueue, btnModeRandom)
+markupModes.add(btnModeFirst, btnModeRandom)
 
 print('BOT STARTED')
 
@@ -67,10 +67,6 @@ def setMode(message):
         if message.text == btnModeFirst.text:
             file.write('first')
             bot.send_message(message.chat.id, f'Режим: {btnModeFirst.text}', reply_markup=markupMain)
-            file.close()
-        elif message.text == btnModeQueue.text:
-            file.write('queue')
-            bot.send_message(message.chat.id, f'Режим: {btnModeQueue.text}', reply_markup=markupMain)
             file.close()
         else:
             file.write('random')
@@ -115,13 +111,13 @@ def set_cfgStep(message):
     ''', reply_markup=markupMain)
     try:
         builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
-                                           cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
-                                           mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read(),
-                                           ID=message.chat.id)
+                                            cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
+                                            mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read(),
+                                            ID=message.chat.id)
         builder.set_price()
         builder.build()
         
-        bot.send_message(message.chat.id, builder.out())
+        bot.send_message(message.chat.id, builder.out(), parse_mode='Markdown')
     except Exception as e:
         bot.send_message(message.chat.id, f'Кажется для данной цены нет сборки, попробуйте увеличить бюджет({e})', reply_markup=markupMain)
     try:

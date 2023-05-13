@@ -166,7 +166,7 @@ class Build:
     def getPSU(self):
         dfPSU = pd.read_csv("data/PSU.csv")
 
-        to_price_PSU = dfPSU[(dfPSU['price'] > self.rom_price[0]) & (dfPSU['price'] < self.rom_price[1]) & (dfPSU['power'] > int(open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt').read()[0:-2]))]
+        to_price_PSU = dfPSU[(dfPSU['price'] > self.psu_price[0]) & (dfPSU['price'] < self.psu_price[1]) & (dfPSU['power'] > int(open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt').read()[0:-2]))]
         try:
             os.remove(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt')
         except:
@@ -185,27 +185,48 @@ class Build:
                        price=psu['price'].values[0]
                        )
 
+    def getRAM(self):
+        dfRAM = pd.read_csv('data/RAM.csv')
+
+        to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
+
+        to_price_RAM.sort_values('value')
+
+        ram = to_price_RAM.head(1)
+
+        self.ram = Ram(name=ram['name'].values[0],
+                       count=ram['count'].values[0],
+                       capacity=ram['capacity'].values[0],
+                       freq=ram['freq'].values[0],
+                       timings=ram['timings'].values[0],
+                       formFactor=ram['formFactor'].values[0],
+                       type=ram['type'].values[0],
+                       price=ram['price'].values[0]
+                       )
+
+
     def build(self):
         self.getCPUnMB()
         self.getGPU()
         self.getROM()
         self.getTDP()
         self.getPSU()
+        self.getRAM()
         
     
     def out(self):
-        return f"""🧠Процессор: {self.cpu.name}
+        return f"""🧠Процессор: `{self.cpu.name}`
             Сокет: {self.cpu.socket}
             Ядер: {self.cpu.cores}
             Потребление: {self.cpu.tdp}W
             Benchmark: {self.cpu.mark}
             Цена: {self.cpu.price}
-🖥Видеокарта: {self.gpu.name}
+🖥Видеокарта: `{self.gpu.name}`
             Потребление: {self.gpu.tdp}W
             Benchmark3D: {self.gpu.mark3D}
             Benchmark2D: {self.gpu.mark2D}
             Цена: {self.gpu.price}
-🎛Материнская плата: {self.motherboard.name}
+🎛Материнская плата: `{self.motherboard.name}`
             Форм фактор: {self.motherboard.formFactor}
             Сокет: {self.motherboard.socket}
             Чипсет: {self.motherboard.chipset}
@@ -215,12 +236,20 @@ class Build:
             Максимальное кол-во ОЗУ: {self.motherboard.maxRam}
             Power PINS: {self.motherboard.powerPin}
             Цена: {self.motherboard.price}
-📀Накопитель: {self.rom.name}
+⏱️Оперативная память: `{self.ram.name}`
+            Тип: {self.ram.type}
+            Кол-во: {self.ram.count}
+            Кол-во памяти: {self.ram.capacity}
+            Частота: {self.ram.freq}
+            Тайминги: {self.ram.timings}
+            Форм фактор: {self.ram.formFactor}
+            Цена: {self.ram.price}
+📀Накопитель: `{self.rom.name}`
             Тип: {self.rom.type}
             Ёмкость: {self.rom.capacity}
             Benchmark: {self.rom.mark}
             Цена: {self.rom.price}
-🔌Блок питания: {self.psu.name}
+🔌Блок питания: `{self.psu.name}`
             Форм фактор: {self.psu.formFactor}
             Мощность: {self.psu.power}W
             Кулер: {self.psu.fan}
@@ -230,7 +259,7 @@ class Build:
 🔧Твои настройки:
             Конфиг: {self.cfg}
             Режим: {self.mode}
-💵Цена: {self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price} руб
+💵Цена: {self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price)} руб
 """
     #сделать очередной режим
 
@@ -289,3 +318,15 @@ class Psu:
         self.pin = pin
         self.gpuPin = gpuPin
         self.price = price
+
+class Ram:
+    def __init__(self, name=None, count=None, capacity=None, freq=None, timings=None, formFactor=None, type=None, price=None):
+        self.name = name
+        self.count = count
+        self.capacity = capacity
+        self.freq = freq
+        self.timings = timings
+        self.formFactor = formFactor
+        self.type = type
+        self.price = price
+        
