@@ -2,7 +2,7 @@ import pandas as pd
 import random, os
 
 class Build:
-    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first', ID=None):
+    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first', ID=None, gpuCFG=None, cpuCfg=None):
         self.motherboard_price = None
         self.cpu_price = None
         self.gpu_price = None
@@ -13,6 +13,8 @@ class Build:
         self.sum_price=sum_price
         self.mode = mode
         self.ID = ID
+        self.gpuCFG = gpuCFG
+        self.cpuCFG = cpuCfg
 
         if cfg == "Gaming":
             self.MB_per = 13
@@ -161,7 +163,7 @@ class Build:
                        price=rom['price'].values[0])
 
     def getTDP(self):
-        open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp))
+        open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp + 300))
 
     def getPSU(self):
         dfPSU = pd.read_csv("data/PSU.csv")
