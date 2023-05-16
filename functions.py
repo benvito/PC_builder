@@ -2,7 +2,7 @@ import pandas as pd
 import random, os
 
 class Build:
-    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first', ID=None, gpuCFG=None, cpuCfg=None):
+    def __init__(self, motherboard=None, cpu=None, gpu=None, psu=None, ram=None, sum_price=None, rom=None, cfg=None, mode='first', ID=None, gpuCFG='None', cpuCfg='None'):
         self.motherboard_price = None
         self.cpu_price = None
         self.gpu_price = None
@@ -67,7 +67,12 @@ class Build:
     
     def getCPUnMB(self):
         dfCPU = pd.read_csv("data/CPU.csv")
-        to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
+        if self.cpuCFG == 'AMD':
+            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['socket'] == 'AM4')]
+        elif self.cpuCFG == 'Intel':
+            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['socket'] != 'AM4')]
+        else:
+            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
         to_price_CPU.sort_values('cpuValue')
 
         if self.mode == 'random':
@@ -94,7 +99,8 @@ class Build:
         
         dfMB = pd.read_csv("data/MB.csv")
         to_price_MB = dfMB[(dfMB['price'] > self.ram_price[0]) & (dfMB['price'] < self.ram_price[1]) & (self.cpu.socket == dfMB["socket"])]
-        to_price_MB.sort_values('ramFreq')
+        
+        to_price_MB = to_price_MB.sort_values('price', ascending=False)
 
         mb = to_price_MB.head(1)
 
@@ -116,7 +122,14 @@ class Build:
 
     def getGPU(self):
         dfGPU = pd.read_csv("data/GPU.csv")
-        to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
+        print(dfGPU.head())
+        if self.gpuCFG == 'NVIDIA':
+            to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1]) & (dfGPU['brnd'] == 'NVIDIA')]
+        elif self.gpuCFG == 'AMD':
+            print('AMD')
+            to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1]) & (dfGPU['brnd'] == 'AMD')]
+        else:
+            to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1])]
         to_price_GPU.sort_values('gpuValue')
 
         if self.mode == 'random':
@@ -201,10 +214,14 @@ class Build:
                        price=psu['price'].values[0]
                        )
 
-    def getRAM(self):
+    def getRAM(self, dbl=False, remainder=0):
         dfRAM = pd.read_csv('data/RAM.csv')
 
-        to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
+        if dbl:
+            to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType) 
+                                 & (dfRAM['count'] == 2 if self.motherboard.ramSlots == 2 else dfRAM['count'] == 4) & (dfRAM['capacity'] >= 16 if self.motherboard.ramSlots == 2 else dfRAM['capacity'] == 8)]
+        else:
+            to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
 
         to_price_RAM.sort_values('value')
 
@@ -235,6 +252,7 @@ class Build:
                 remainder -= self.other_price
                 if remainder > 3000:
                     self.getROM(dbl=True, remainder=remainder/2)
+                    self.getRAM(dbl=True, remainder=remainder/2)
         
     
     def out(self):

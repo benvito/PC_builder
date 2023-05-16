@@ -20,6 +20,7 @@ btnANY = telebot.types.KeyboardButton('🎲 Любой')
 btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
 btnWorking = telebot.types.KeyboardButton("💻 Работа")
 btnGraphics = telebot.types.KeyboardButton("🎥 Графика")
+btnMenu = telebot.types.KeyboardButton("Меню")
 
 btnSum1 = telebot.types.KeyboardButton("50000")
 btnSum2 = telebot.types.KeyboardButton("100000")
@@ -39,7 +40,7 @@ markupModes = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=
 markupModes.add(btnModeFirst, btnModeRandom)
 
 markupSettings = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-markupSettings.add(btnCPU, btnGPU)
+markupSettings.add(btnCPU, btnGPU, btnMenu)
 
 markupSettingsCPU = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 markupSettingsCPU.add(btnIntel, btnAMD, btnANY)
@@ -98,7 +99,9 @@ def setMode(message):
 
 ############### Настройки ################
 def setSettings(message):
-    if message.text == btnCPU.text:
+    if message.text == "/start" or message.text == btnMenu.text:
+        bot.send_message(message.chat.id, 'ОК', reply_markup=markupMain)
+    elif message.text == btnCPU.text:
         msg = bot.send_message(message.chat.id, 'Выберите бренд', reply_markup=markupSettingsCPU)
         bot.register_next_step_handler(msg, setSettingsCPU)
     else:
@@ -106,10 +109,20 @@ def setSettings(message):
         bot.register_next_step_handler(msg, setSettingsGPU)
 
 def setSettingsCPU(message):
-    pass
+    try:
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cpu.txt', 'w').write(message.text)
+        msg = bot.send_message(message.chat.id, 'Готово. Выберите комплектующее', reply_markup=markupSettings)
+        bot.register_next_step_handler(msg, setSettings)
+    except:
+        bot.send_message(message.chat.id, 'Что то пошло не так', reply_markup=markupMain)
 
 def setSettingsGPU(message):
-    pass
+    try:
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\gpu.txt', 'w').write(message.text)
+        msg = bot.send_message(message.chat.id, 'Готово. Выберите комплектующее', reply_markup=markupSettings)
+        bot.register_next_step_handler(msg, setSettings)
+    except:
+        bot.send_message(message.chat.id, 'Что то пошло не так', reply_markup=markupMain)
 
 ############### Запрос данных ################
 def set_priceStep(message):
@@ -153,6 +166,8 @@ def set_cfgStep(message):
         builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
                                             cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read(),
                                             mode=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'r').read(),
+                                            gpuCFG=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\gpu.txt', 'r').read(),
+                                            cpuCfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cpu.txt', 'r').read(),
                                             ID=message.chat.id)
         builder.set_price()
         builder.build()
