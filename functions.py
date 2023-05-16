@@ -63,6 +63,7 @@ class Build:
         self.rom_price = (int((self.sum_price / 100) * (self.ROM_per - 30)), int((self.sum_price / 100) * self.ROM_per))
         self.ram_price = (int((self.sum_price / 100) * (self.RAM_per - 30)), int((self.sum_price / 100) * self.RAM_per))
         self.psu_price = (int((self.sum_price / 100) * (self.PSU_per - 30)), int((self.sum_price / 100) * self.PSU_per))
+        self.other_price = int((self.sum_price / 100) * self.Other_per)
     
     def getCPUnMB(self):
         dfCPU = pd.read_csv("data/CPU.csv")
@@ -138,9 +139,13 @@ class Build:
                        tdp=gpu['TDP'].values[0],                        
                        category=gpu['category'].values[0])
 
-    def getROM(self):
+    def getROM(self, dbl=False, remainder=0):
         dfROM = pd.read_csv("data/ROM.csv")
-        if self.cfg == "Gaming":
+        if self.cfg == "Gaming" and dbl:
+            to_price_ROM = dfROM[(dfROM['price'] <= remainder) & (dfROM['type'] == 'SSD') & (dfROM['diskCapacity'] > 1000)]
+            if len(to_price_ROM['type'].values) == 0:
+                to_price_ROM = dfROM[(dfROM['price'] <= remainder) & (dfROM['diskCapacity'] > 2000)]
+        elif self.cfg == "Gaming" and not dbl:
             to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1]) & (dfROM['type'] == 'SSD')]
             if len(to_price_ROM['type'].values) == 0:
                 to_price_ROM = dfROM[(dfROM['price'] > self.rom_price[0]) & (dfROM['price'] < self.rom_price[1])]
@@ -154,13 +159,22 @@ class Build:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
             pass
-
-        self.rom = Rom(name=rom['driveName'].values[0],
-                       type=rom['type'].values[0],
-                       capacity=rom['diskCapacity'].values[0],
-                       mark=rom['diskMark'].values[0],
-                       rank=rom['rank'].values[0],
-                       price=rom['price'].values[0])
+        if not dbl:
+            self.rom = Rom(name=rom['driveName'].values[0],
+                        type=rom['type'].values[0],
+                        capacity=rom['diskCapacity'].values[0],
+                        mark=rom['diskMark'].values[0],
+                        rank=rom['rank'].values[0],
+                        price=rom['price'].values[0])
+        elif dbl:
+            self.rom = Rom(name=rom['driveName'].values[0],
+                        type=rom['type'].values[0],
+                        capacity=rom['diskCapacity'].values[0],
+                        mark=rom['diskMark'].values[0],
+                        rank=rom['rank'].values[0],
+                        price=rom['price'].values[0])
+        else:
+            print('Что то пошло не так')
 
     def getTDP(self):
         open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp + 300))
@@ -214,6 +228,13 @@ class Build:
         self.getTDP()
         self.getPSU()
         self.getRAM()
+        tmpPrice = self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price)
+        if tmpPrice < self.sum_price:
+            remainder = self.sum_price - tmpPrice
+            if remainder > self.other_price:
+                remainder -= self.other_price
+                if remainder > 3000:
+                    self.getROM(dbl=True, remainder=remainder/2)
         
     
     def out(self):
@@ -258,12 +279,12 @@ class Build:
             PIN: {self.psu.pin}
             GPU PIN: {self.psu.gpuPin}
             Цена: {self.psu.price}
+🚬На остаточные комплектующие: {self.other_price}
 🔧Твои настройки:
             Конфиг: {self.cfg}
             Режим: {self.mode}
-💵Цена: {self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price)} руб
+💵Цена: {round(self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price), 1)} руб
 """
-    #сделать очередной режим
 
 class Motherboard:
     def __init__(self, name=None, formFactor=None, socket=None, chipset=None, ramType=None, ramSlots=0, ramFreq=0, maxRam=0, powerPin=None, price=0, category=None):
@@ -302,13 +323,14 @@ class Gpu:
 
 
 class Rom:
-    def __init__(self, name=None, type=None, capacity=0, price=0, mark=0, rank=0):
+    def __init__(self, name=None, type=None, capacity=0, price=0, mark=0, rank=0, count=1):
         self.name = name
         self.type = type
         self.capacity = capacity
         self.price = price
         self.mark = mark
         self.rank = rank
+        self.count = count
     
 
 class Psu:

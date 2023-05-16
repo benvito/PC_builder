@@ -5,12 +5,18 @@ import os
 token = '6293487861:AAGDY7-kNgR1tzWpyp2SJDBTOsHQJkOa0_M' #t.me/buildYourPC_bot
 bot = telebot.TeleBot(token)
 
+############### Кнопки ################
 btnBuild = telebot.types.KeyboardButton("🖥 Собрать ПК")
 btnModes = telebot.types.KeyboardButton("📄 Моды")
 btnModeFirst = telebot.types.KeyboardButton("🥇 Лучший")
-# btnModeQueue = telebot.types.KeyboardButton("🔎 Очередь(не работает)")
 btnModeRandom = telebot.types.KeyboardButton("🎲 Рандом")
 btnSettings = telebot.types.KeyboardButton("⚙️ Настройки")
+btnNVIDIA = telebot.types.KeyboardButton('NVIDIA')
+btnAMD = telebot.types.KeyboardButton('AMD')
+btnIntel = telebot.types.KeyboardButton('Intel')
+btnCPU = telebot.types.KeyboardButton('🧠 CPU')
+btnGPU = telebot.types.KeyboardButton('🖥 GPU')
+btnANY = telebot.types.KeyboardButton('🎲 Любой')
 btnGaming = telebot.types.KeyboardButton("🎮 Гейминг")
 btnWorking = telebot.types.KeyboardButton("💻 Работа")
 btnGraphics = telebot.types.KeyboardButton("🎥 Графика")
@@ -18,6 +24,8 @@ btnGraphics = telebot.types.KeyboardButton("🎥 Графика")
 btnSum1 = telebot.types.KeyboardButton("50000")
 btnSum2 = telebot.types.KeyboardButton("100000")
 btnSum3 = telebot.types.KeyboardButton("150000")
+
+############### Пресеты кнопок ################
 markupPrices = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 markupPrices.add(btnSum1, btnSum2, btnSum3)
 
@@ -30,9 +38,19 @@ markupBuildCFG.add(btnGaming, btnGraphics, btnWorking)
 markupModes = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
 markupModes.add(btnModeFirst, btnModeRandom)
 
+markupSettings = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+markupSettings.add(btnCPU, btnGPU)
+
+markupSettingsCPU = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+markupSettingsCPU.add(btnIntel, btnAMD, btnANY)
+
+markupSettingsGPU = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+markupSettingsGPU.add(btnNVIDIA, btnAMD, btnANY)
+
 print('BOT STARTED')
 
 @bot.message_handler(commands=['start', 'info', 'help'])
+############### Инициализация /start ################
 def start(message):
     try:
         if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
@@ -44,8 +62,13 @@ def start(message):
         open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\name.txt', 'a+').write(f'Username: {message.from_user.username}\nName: {message.from_user.first_name} {message.from_user.last_name}')
     if 'mode.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
         open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\mode.txt', 'a+').write(f'first')
+    if 'cpu.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cpu.txt', 'a+').write('nan')
+    if 'gpu.txt' not in os.listdir(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
+        open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\gpu.txt', 'a+').write('nan')
 
 @bot.message_handler(content_types=['text'])
+############### Проверка ввода ################
 def text(message):
     if message.text == btnBuild.text:
         msg = bot.send_message(message.chat.id, 'Укажи нужную цену без пробелов и точек или выбирай из кнопок внизу', reply_markup=markupPrices)
@@ -53,13 +76,13 @@ def text(message):
     elif message.text == btnModes.text:
         msg = bot.send_message(message.chat.id, 'Выберите режим', reply_markup=markupModes)
         bot.register_next_step_handler(msg, setMode)
-
     elif message.text == btnSettings.text:
-        pass
-        #в процессе реализации
+        msg = bot.send_message(message.chat.id, 'Выберите комплектующее', reply_markup=markupSettings)
+        bot.register_next_step_handler(msg, setSettings)
     else:
         bot.send_message(message.chat.id, 'Извини, я тебя не понимаю, используй /help для помощи или /start для кнопок')
 
+############### Режимы ################
 def setMode(message):
     if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
         os.makedirs(f'{os.getcwd()}\\userdata\\{message.chat.id}')
@@ -73,6 +96,22 @@ def setMode(message):
             bot.send_message(message.chat.id, f'Режим: {btnModeRandom.text}', reply_markup=markupMain)
             file.close()
 
+############### Настройки ################
+def setSettings(message):
+    if message.text == btnCPU.text:
+        msg = bot.send_message(message.chat.id, 'Выберите бренд', reply_markup=markupSettingsCPU)
+        bot.register_next_step_handler(msg, setSettingsCPU)
+    else:
+        msg = bot.send_message(message.chat.id, 'Выберите бренд', reply_markup=markupSettingsGPU)
+        bot.register_next_step_handler(msg, setSettingsGPU)
+
+def setSettingsCPU(message):
+    pass
+
+def setSettingsGPU(message):
+    pass
+
+############### Запрос данных ################
 def set_priceStep(message):
     try:
         if not os.path.exists(f'{os.getcwd()}\\userdata\\{message.chat.id}'):
@@ -108,6 +147,7 @@ def set_cfgStep(message):
             Накопитель до {bld.rom_price[1]} руб
             Оперативная память до {bld.ram_price[1]} руб
             Блок питания до {bld.psu_price[1]} руб
+            На остальное до {bld.other_price} руб
     ''', reply_markup=markupMain)
     try:
         builder = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()),
