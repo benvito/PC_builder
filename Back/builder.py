@@ -83,7 +83,6 @@ class Build:
         else:
             cpu = to_price_CPU.head(1)
 
-
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
@@ -122,7 +121,6 @@ class Build:
 
     def getGPU(self):
         dfGPU = pd.read_csv("data/GPU.csv")
-        print(dfGPU.head())
         if self.gpuCFG == 'NVIDIA':
             to_price_GPU = dfGPU[(dfGPU['price'] > self.gpu_price[0]) & (dfGPU['price'] < self.gpu_price[1]) & (dfGPU['brnd'] == 'NVIDIA')]
         elif self.gpuCFG == 'AMD':
