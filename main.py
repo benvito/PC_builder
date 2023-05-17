@@ -150,7 +150,7 @@ def set_cfgStep(message):
             f.close()
         f.close()
 
-
+#сборка
     bld = func.Build(sum_price=int(open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\price.txt', 'r').read()), cfg=open(f'{os.getcwd()}\\userdata\\{message.chat.id}\\cfg.txt', 'r').read())
     bld.set_price()
     bot.send_message(message.chat.id, f'''💵Расчет цены:
