@@ -190,7 +190,7 @@ class Build:
             print('Что то пошло не так')
 
     def getTDP(self):
-        open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp + 300))
+        open(f'{os.getcwd()}\\userdata\\{self.ID}\\TDP.txt', 'a+').write(str(self.cpu.tdp + self.gpu.tdp + 400))
 
     def getPSU(self):
         dfPSU = pd.read_csv("data/PSU.csv")
