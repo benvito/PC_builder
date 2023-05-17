@@ -68,9 +68,9 @@ class Build:
     def getCPUnMB(self):
         dfCPU = pd.read_csv("data/CPU.csv")
         if self.cpuCFG == 'AMD':
-            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['socket'] == 'AM4')]
+            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['brnd'] == 'AMD')]
         elif self.cpuCFG == 'Intel':
-            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['socket'] != 'AM4')]
+            to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1]) & (dfCPU['brnd'] == 'Intel')]
         else:
             to_price_CPU = dfCPU[(dfCPU['price'] > self.cpu_price[0]) & (dfCPU['price'] < self.cpu_price[1])]
         to_price_CPU.sort_values('cpuValue')
