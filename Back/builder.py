@@ -82,7 +82,6 @@ class Build:
                 randomTMP -= 1
         else:
             cpu = to_price_CPU.head(1)
-
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
@@ -102,7 +101,7 @@ class Build:
         to_price_MB = to_price_MB.sort_values('price', ascending=False)
 
         mb = to_price_MB.head(1)
-
+        print(mb.head())
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
@@ -142,7 +141,6 @@ class Build:
             gpu = gpu.drop(columns='Unnamed: 0')
         except:
             pass
-        
         self.gpu = Gpu(name=gpu['gpuName'].values[0], 
                        price=gpu['price'].values[0], 
                        mark3D=gpu['G3Dmark'].values[0], 
@@ -165,7 +163,6 @@ class Build:
         to_price_ROM.sort_values('driveValue')
 
         rom = to_price_ROM.head(1)
-
         try:
             cpu = cpu.drop(columns='Unnamed: 0')
         except:
@@ -218,13 +215,39 @@ class Build:
         if dbl:
             to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType) 
                                  & (dfRAM['count'] == 2 if self.motherboard.ramSlots == 2 else dfRAM['count'] == 4) & (dfRAM['capacity'] >= 16 if self.motherboard.ramSlots == 2 else dfRAM['capacity'] == 8)]
+            to_price_RAM.sort_values('value')
+            ram = to_price_RAM.head(1)
+            
+            if len(ram) == 0 and self.motherboard.ramSlots == 4:
+                to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
+                to_price_RAM.sort_values('value')
+                ram = to_price_RAM.head(1)
+                
+                if ram['price'].values[0]*2 < self.ram_price + remainder/2:
+                    print(ram['price'].values[0]*2)
+                    print(self.ram_price + remainder/2)
+                    self.ram = Ram(name=ram['name'].values[0],
+                        count=ram['count'].values[0]*2,
+                        capacity=ram['capacity'].values[0],
+                        freq=ram['freq'].values[0],
+                        timings=ram['timings'].values[0],
+                        formFactor=ram['formFactor'].values[0],
+                        type=ram['type'].values[0],
+                        price=ram['price'].values[0]*2
+                        )
+                    return 0;
+                else:
+                    to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
+            elif len(ram) == 0 and self.motherboard.ramSlots == 2:
+                to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
         else:
             to_price_RAM = dfRAM[(dfRAM['price'] > self.ram_price[0]) & (dfRAM['price'] < self.ram_price[1]) & (dfRAM['type'] == self.motherboard.ramType)]
 
         to_price_RAM.sort_values('value')
-
+        print(to_price_RAM.head())
         ram = to_price_RAM.head(1)
-
+        print(ram)
+        
         self.ram = Ram(name=ram['name'].values[0],
                        count=ram['count'].values[0],
                        capacity=ram['capacity'].values[0],
@@ -243,14 +266,12 @@ class Build:
         self.getTDP()
         self.getPSU()
         self.getRAM()
-        tmpPrice = self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price)
+        tmpPrice = self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price) + self.other_price
         if tmpPrice < self.sum_price:
             remainder = self.sum_price - tmpPrice
-            if remainder > self.other_price:
-                remainder -= self.other_price
-                if remainder > 3000:
-                    self.getROM(dbl=True, remainder=remainder/2)
-                    self.getRAM(dbl=True, remainder=remainder/2)
+            if remainder > 4000:
+                self.getROM(dbl=True, remainder=remainder/2)
+                self.getRAM(dbl=True, remainder=remainder/2)
         
     
     def out(self):
@@ -299,7 +320,7 @@ class Build:
 🔧Твои настройки:
             Конфиг: {self.cfg}
             Режим: {self.mode}
-💵Цена: {round(self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + int(self.ram.price), 1)} руб
+💵Цена: {round(self.cpu.price + self.gpu.price + self.motherboard.price + self.rom.price + self.psu.price + self.ram.price, 2)} руб
 """
 
 class Motherboard:
