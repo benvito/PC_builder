@@ -12,9 +12,11 @@ print('BOT STARTED')
 ############### Инициализация /start ################
 def start(message):
     bot.send_message(message.chat.id, fnc.init(message), reply_markup=ui.markupMain)
+    
 
 @bot.message_handler(content_types=['text'])
 ############### Проверка ввода ################
+
 def text(message):
     if message.text == ui.btnBuild.text:
         msg = bot.send_message(message.chat.id, 'Укажи нужную цену без пробелов и точек или выбирай из кнопок внизу', reply_markup=ui.markupPrices)

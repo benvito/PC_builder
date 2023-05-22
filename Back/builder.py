@@ -223,9 +223,9 @@ class Build:
                 to_price_RAM.sort_values('value')
                 ram = to_price_RAM.head(1)
                 
-                if ram['price'].values[0]*2 < self.ram_price + remainder/2:
+                if ram['price'].values[0]*2 < self.ram_price[1] + remainder/2:
                     print(ram['price'].values[0]*2)
-                    print(self.ram_price + remainder/2)
+                    print(self.ram_price[1] + remainder/2)
                     self.ram = Ram(name=ram['name'].values[0],
                         count=ram['count'].values[0]*2,
                         capacity=ram['capacity'].values[0],
